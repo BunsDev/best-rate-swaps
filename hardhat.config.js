@@ -7,8 +7,6 @@ module.exports = {
   solidity: {
     compilers: [
       { version: "0.8.20" },
-      { version: "0.4.18" },
-      { version: "0.5.0" },
     ]
   },
   defaultNetwork: "hardhat",

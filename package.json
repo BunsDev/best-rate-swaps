@@ -5,6 +5,22 @@
   "repository": "git@github.com:JMariadlcs/best-rate-swaps.git",
   "license": "MIT",
   "devDependencies": {
-    "hardhat": "^2.18.3"
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
+    "@nomicfoundation/hardhat-ethers": "^3.0.4",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/hardhat-upgrades": "^2.3.3",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "chai": "^4.3.10",
+    "ethers": "^6.8.0",
+    "hardhat": "^2.18.3",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.5",
+    "typechain": "^8.3.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
   }
 }
