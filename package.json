@@ -1,0 +1,10 @@
+{
+  "name": "best-rates-swaps",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:JMariadlcs/best-rate-swaps.git",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.18.3"
+  }
+}
