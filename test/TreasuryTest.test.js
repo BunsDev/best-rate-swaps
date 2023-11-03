@@ -112,7 +112,7 @@ describe("Treasury tests", async function () {
             assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
 
 
-            // Second step: swap internally using SushiSwap
+            // Second step: swap internally using Camelot
             const WETHInternalBalanceBeforeSwap = await Treasury.WETHAmount()
             const timestamp = Date.now()
             const swap = await Treasury.connect(deployer).swapWETHforUSDT([WETHAddress, USDTAddress], WETHInternalBalanceBeforeSwap.toString(), 1, 0, timestamp)
@@ -125,5 +125,44 @@ describe("Treasury tests", async function () {
         });
     })
 
-    
+    describe("Withdraw USDT from treasury", () => {
+        it("Deposit, swaps and then allows swapped USDT correctly from treasury", async function () {
+            // First step: deposit WETH tokens
+            const WETH = await ethers.getContractAt("IWETH", WETHAddress)
+            const USDT = await ethers.getContractAt("IERC20", USDTAddress)
+            const WETHBalanceBefore = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
+            await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
+
+            const deposit = await Treasury.connect(deployer).depositWETH(WETHBalanceBefore.toString())
+            const WETHBalanceAfter = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceAfter = await Treasury.WETHAmount()
+            const USDTInternalBalanceBeforeSwap = await USDT.balanceOf(await Treasury.getAddress())
+            assert(USDTInternalBalanceBeforeSwap == 0)
+            assert(WETHBalanceBefore > WETHBalanceAfter)
+            assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
+
+
+            // Second step: swap internally using SushiSwap
+            const WETHInternalBalanceBeforeSwap = await Treasury.WETHAmount()
+            const timestamp = Date.now()
+            const swap = await Treasury.connect(deployer).swapWETHforUSDT([WETHAddress, USDTAddress], WETHInternalBalanceBeforeSwap.toString(), 0, 0, timestamp)
+
+            const WETHInternalBalanceAfterSwap = await Treasury.WETHAmount()
+            const USDTInternalBalanceAfterSwap = await USDT.balanceOf(await Treasury.getAddress())
+        
+            assert(WETHInternalBalanceAfterSwap.toString() == 0)
+            assert(USDTInternalBalanceAfterSwap > 0)
+
+            // Third step: withdraw the swapped USDT
+            const USDTBalanceUserWalletBeforeWithdraw = await USDT.balanceOf(deployerAddress)
+            const withdraw = await Treasury.connect(deployer).withdrawAllUSDT()
+            const USDTInternalBalanceAfterWithdrawing = await USDT.balanceOf(await Treasury.getAddress())
+            assert(USDTInternalBalanceAfterWithdrawing < USDTInternalBalanceAfterSwap)
+            assert(USDTInternalBalanceAfterWithdrawing == 0)
+
+            const USDTBalanceUserWalletAfterWithdraw = await USDT.balanceOf(deployerAddress)
+            assert(USDTBalanceUserWalletAfterWithdraw > USDTBalanceUserWalletBeforeWithdraw)
+        });
+    });
 })
