@@ -2,9 +2,9 @@ const { assert } = require("chai")
 const { ethers } = require("hardhat")
 const { networks } = require("../hardhat.config")
 
-const deployerAddress = "0x01f4e56D5ee46e84Edf8595ca7A7B62a3306De76" // Random account with funds for impersonating ----Change to mine when get funds----
+const deployerAddress = "0xe371cDd686341baDbE337D21c53fA51Db505e361" // My account with funds for impersonating 
 
-let deployedTreasuryAddress = "" // Deployed Treasury address in mainnet (Arbitrum)
+let deployedTreasuryAddress = "0x515208c0C32a5530E88ee580848c8b6D1c0D871F" // Deployed Treasury address in mainnet (Arbitrum)
 
 const SushiSwapRouterV2Address = "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506" // SushiSwapV2Router in Arbitrum
 const CamelotV2RouterAddress = "0xc873fEcbd354f5A56E00E710B90EF4201db2448d" // CamelotV2Router in Arbitrum
@@ -22,14 +22,9 @@ describe("Treasury tests", async function () {
             method: "hardhat_impersonateAccount",
             params: [deployerAddress],
         });
-
         deployer = await ethers.getSigner(deployerAddress)
-
-        // Get WETH
-        const WETH = await ethers.getContractAt("IWETH", WETHAddress)
-        const amountIn = 10e18.toString()
-        await WETH.connect(deployer).deposit({ value: amountIn })
-
+     
+        await hre.network.provider.send("hardhat_setBalance", [deployerAddress, "0x56BC75E2D63100000"]); // We are sending 100 ETH "fake" in forked network
     });
 
     describe("constructor", () => {
@@ -37,7 +32,7 @@ describe("Treasury tests", async function () {
             const SushiRouterV2Address_ = await Treasury.sushiswapV2Router()
             const CamelotRouterV2Address_ = await Treasury.camelotV2Router()
             const WETHAddress_ = await Treasury.WETH()
-            const USDTAddress_ = await Treasury.USDC()
+            const USDTAddress_ = await Treasury.USDT()
             assert.equal(SushiRouterV2Address_, SushiSwapRouterV2Address)
             assert.equal(CamelotRouterV2Address_, CamelotV2RouterAddress)
             assert.equal(WETHAddress_, WETHAddress)
@@ -52,13 +47,10 @@ describe("Treasury tests", async function () {
             const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
             await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
 
-            const amountIn = 1e18.toString()
-            const deposit = await Treasury.connect(deployer).depositWETH(amountIn)
-
+            const deposit = await Treasury.connect(deployer).depositWETH(WETHBalanceBefore.toString())
             const WETHBalanceAfter = await WETH.balanceOf(deployerAddress)
             const TreasuryWETHBalanceAfter = await Treasury.WETHAmount()
 
-            await WETH.connect(deployer).balanceOf()
             assert(WETHBalanceBefore > WETHBalanceAfter)
             assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
         });
