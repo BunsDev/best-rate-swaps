@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import "./interfaces/IUniswapRouterV2.sol";
 import "./interfaces/IUniswapV2Router01.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Treasury {
+    using SafeERC20 for IERC20;
 
     IUniswapRouterV2 public sushiswapV2Router;
     IUniswapV2Router01 public camelotV2Router;
@@ -20,9 +23,10 @@ contract Treasury {
     }
 
     // @notice: Function use for depositing ETH to the treasury
-    function depositWETH() public payable {
-        usersWETHBalance[msg.sender] += msg.value;
-        emit ETHDeposited(msg.sender, msg.value);
+    function depositWETH(uint256 amount) public {
+        usersWETHBalance[msg.sender] += amount;
+        IERC20(USDT).safeTransferFrom(msg.sender, address(this), amount);
+        emit ETHDeposited(msg.sender, amount);
     }
 
     function swapWETHforUSDT(uint256 amount) public {
