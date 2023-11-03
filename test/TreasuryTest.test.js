@@ -1,4 +1,4 @@
-const { assert } = require("chai")
+const { assert, expect } = require("chai")
 const { ethers } = require("hardhat")
 const { networks } = require("../hardhat.config")
 
@@ -11,6 +11,7 @@ const CamelotV2RouterAddress = "0xc873fEcbd354f5A56E00E710B90EF4201db2448d" // C
 
 const WETHAddress = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1" // WETH address in Arbitrum
 const USDTAddress = "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" // USDT address in Arbitrum
+const DAIAddress = "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" // DAI address in Arbitrum
 let deployer, snapshotId
 
 describe("Treasury tests", async function () {
@@ -166,6 +167,62 @@ describe("Treasury tests", async function () {
 
             const USDTBalanceUserWalletAfterWithdraw = await USDT.balanceOf(deployerAddress)
             assert(USDTBalanceUserWalletAfterWithdraw > USDTBalanceUserWalletBeforeWithdraw)
+        });
+    });
+
+    describe("Test reverting swapping incorrent path", () => {
+        it("Should revert due to swapping to DAI", async function () {
+            // First step: deposit WETH tokens
+            const WETH = await ethers.getContractAt("IWETH", WETHAddress)
+            const USDT = await ethers.getContractAt("IERC20", USDTAddress)
+            const WETHBalanceBefore = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
+            await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
+
+            const deposit = await Treasury.connect(deployer).depositWETH(WETHBalanceBefore.toString())
+            const WETHBalanceAfter = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceAfter = await Treasury.WETHAmount()
+            const USDTInternalBalanceBeforeSwap = await USDT.balanceOf(await Treasury.getAddress())
+            assert(USDTInternalBalanceBeforeSwap == 0)
+            assert(WETHBalanceBefore > WETHBalanceAfter)
+            assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
+
+            // Second step: swap internally using SushiSwap
+            const WETHInternalBalanceBeforeSwap = await Treasury.WETHAmount()
+            const timestamp = Date.now()
+            try {
+                await Treasury.connect(deployer).swapWETHforUSDT([WETHAddress, DAIAddress], WETHInternalBalanceBeforeSwap.toString(), 0, 0, timestamp);
+                assert.fail("Transaction did not revert as expected.");
+            } catch (error) {
+                assert.include(error.message, "You are only allowed to swap to USDT");
+            }
+        });
+
+        it("Should revert due to swapping from USDT", async function () {
+            // First step: deposit WETH tokens
+            const WETH = await ethers.getContractAt("IWETH", WETHAddress)
+            const USDT = await ethers.getContractAt("IERC20", USDTAddress)
+            const WETHBalanceBefore = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
+            await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
+
+            const deposit = await Treasury.connect(deployer).depositWETH(WETHBalanceBefore.toString())
+            const WETHBalanceAfter = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceAfter = await Treasury.WETHAmount()
+            const USDTInternalBalanceBeforeSwap = await USDT.balanceOf(await Treasury.getAddress())
+            assert(USDTInternalBalanceBeforeSwap == 0)
+            assert(WETHBalanceBefore > WETHBalanceAfter)
+            assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
+
+            // Second step: swap internally using SushiSwap
+            const WETHInternalBalanceBeforeSwap = await Treasury.WETHAmount()
+            const timestamp = Date.now()
+            try {
+                await Treasury.connect(deployer).swapWETHforUSDT([USDT, WETHAddress], WETHInternalBalanceBeforeSwap.toString(), 0, 0, timestamp);
+                assert.fail("Transaction did not revert as expected.");
+            } catch (error) {
+                assert.include(error.message, "You are only allowed to swap from WETH");
+            }
         });
     });
 })
