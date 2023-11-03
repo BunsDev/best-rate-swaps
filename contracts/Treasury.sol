@@ -59,7 +59,4 @@ contract Treasury {
         IERC20(USDT).transfer(msg.sender, USDTAmount);
         emit USDTWithdrew(USDTAmount, msg.sender);
     }
-
-
-  
 }
