@@ -6,15 +6,15 @@ import "./interfaces/IUniswapV2Router01.sol";
 
 contract Treasury {
 
-    IUniswapRouterV2 public uniswapV2Router;
+    IUniswapRouterV2 public sushiswapV2Router;
     IUniswapV2Router01 public camelotV2Router;
 
     address public USDT;
     mapping(address => uint256) public usersWETHBalance;
     event ETHDeposited(address userAddress, uint256 amount);
 
-    constructor(address USDTAddress, address uniswapV2RouterAddress, address camelotV2RouterAddress) {
-        uniswapV2Router = IUniswapRouterV2(uniswapV2RouterAddress);
+    constructor(address USDTAddress, address sushiswapV2RouterAddress, address camelotV2RouterAddress) {
+        sushiswapV2Router = IUniswapRouterV2(sushiswapV2RouterAddress);
         camelotV2Router = IUniswapV2Router01(camelotV2RouterAddress);
         USDT = USDTAddress;
     }
