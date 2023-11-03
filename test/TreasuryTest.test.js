@@ -53,7 +53,6 @@ describe("Treasury tests", async function () {
         it("Deposits any token correctly into the Treasury", async function () {
             const WETH = await ethers.getContractAt("IWETH", WETHAddress)
             const WETHBalanceBefore = await WETH.balanceOf(deployerAddress)
-            console.log("BHERE", WETHBalanceBefore)
             const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
             await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
 
@@ -67,33 +66,33 @@ describe("Treasury tests", async function () {
     })
 
     describe("Swap Internal Balance", () => {
-        it("Swaps internal tokens correctly that were previously deposited", async function () {
+        it("Swaps internal tokens correctly that were previously deposited using SushiSwap", async function () {
             // First step: deposit WETH tokens
             const WETH = await ethers.getContractAt("IWETH", WETHAddress)
+            const USDT = await ethers.getContractAt("IERC20", USDTAddress)
             const WETHBalanceBefore = await WETH.balanceOf(deployerAddress)
-            console.log("BHERE", WETHBalanceBefore)
             const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
             await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
 
             const deposit = await Treasury.connect(deployer).depositWETH(WETHBalanceBefore.toString())
             const WETHBalanceAfter = await WETH.balanceOf(deployerAddress)
             const TreasuryWETHBalanceAfter = await Treasury.WETHAmount()
-            console.log(WETHBalanceBefore, WETHBalanceAfter, TreasuryWETHBalanceBefore, TreasuryWETHBalanceAfter)
+            const USDTInternalBalanceBeforeSwap = await USDT.balanceOf(await Treasury.getAddress())
+            assert(USDTInternalBalanceBeforeSwap == 0)
             assert(WETHBalanceBefore > WETHBalanceAfter)
             assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
 
 
-            // Second step: swap internally 
-            const USDT = await ethers.getContractAt("IERC20", USDTAddress)
+            // Second step: swap internally using SushiSwap
             const WETHInternalBalanceBeforeSwap = await Treasury.WETHAmount()
-           // const USDCInternalBalanceBeforeSwap = await Treasury.userBalance(deployerAddress, USDCAddress)
-           // await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
             const timestamp = Date.now()
             const swap = await Treasury.connect(deployer).swapWETHforUSDT([WETHAddress, USDTAddress], WETHInternalBalanceBeforeSwap.toString(), 1, 0, timestamp)
 
             const WETHInternalBalanceAfterSwap = await Treasury.WETHAmount()
+            const USDTInternalBalanceAfterSwap = await USDT.balanceOf(await Treasury.getAddress())
             
-            assert(WETHInternalBalanceAfterSwap.toString() === '0')
+            assert(WETHInternalBalanceAfterSwap.toString() == 0)
+            assert(USDTInternalBalanceAfterSwap > 0)
         });
     })
 })
