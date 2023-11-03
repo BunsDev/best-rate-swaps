@@ -5,8 +5,9 @@ import "./interfaces/IUniswapRouterV2.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Treasury {
+contract Treasury is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IUniswapRouterV2 public sushiswapV2Router;
@@ -34,7 +35,7 @@ contract Treasury {
     }
 
     // @notice: Function use for swapping from WETH to USDT using 2 different providers
-    function swapWETHforUSDT(address[] memory path, uint256 swapAmount, uint8 selectRouter, uint256 minAmountOut, uint256 deadline) public {
+    function swapWETHforUSDT(address[] memory path, uint256 swapAmount, uint8 selectRouter, uint256 minAmountOut, uint256 deadline) nonReentrant public {
         require(path[0] == WETH, "You are only allowed to swap from WETH");
         require(path[path.length - 1] == USDT, "You are only allowed to swap to USDT");
         require(WETHAmount >= swapAmount, "User has not enough balance for swap");
@@ -54,7 +55,7 @@ contract Treasury {
     }
 
     // @notice: Function use for withdrawing all the USDT in the Treasury
-    function withdrawAllUSDT() public {
+    function withdrawAllUSDT() nonReentrant public {
         uint256 USDTAmount = IERC20(USDT).balanceOf(address(this));
         IERC20(USDT).transfer(msg.sender, USDTAmount);
         emit USDTWithdrew(USDTAmount, msg.sender);
