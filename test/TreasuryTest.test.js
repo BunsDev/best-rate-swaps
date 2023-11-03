@@ -65,8 +65,37 @@ describe("Treasury tests", async function () {
         });
     })
 
-    describe("Swap Internal Balance", () => {
+    describe("Swap WETH balance to WETH correctly using Sushiswap and Camelot", () => {
         it("Swaps internal tokens correctly that were previously deposited using SushiSwap", async function () {
+            // First step: deposit WETH tokens
+            const WETH = await ethers.getContractAt("IWETH", WETHAddress)
+            const USDT = await ethers.getContractAt("IERC20", USDTAddress)
+            const WETHBalanceBefore = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceBefore = await Treasury.WETHAmount()
+            await WETH.connect(deployer).approve(await Treasury.getAddress(), WETHBalanceBefore)
+
+            const deposit = await Treasury.connect(deployer).depositWETH(WETHBalanceBefore.toString())
+            const WETHBalanceAfter = await WETH.balanceOf(deployerAddress)
+            const TreasuryWETHBalanceAfter = await Treasury.WETHAmount()
+            const USDTInternalBalanceBeforeSwap = await USDT.balanceOf(await Treasury.getAddress())
+            assert(USDTInternalBalanceBeforeSwap == 0)
+            assert(WETHBalanceBefore > WETHBalanceAfter)
+            assert(TreasuryWETHBalanceBefore < TreasuryWETHBalanceAfter)
+
+
+            // Second step: swap internally using SushiSwap
+            const WETHInternalBalanceBeforeSwap = await Treasury.WETHAmount()
+            const timestamp = Date.now()
+            const swap = await Treasury.connect(deployer).swapWETHforUSDT([WETHAddress, USDTAddress], WETHInternalBalanceBeforeSwap.toString(), 0, 0, timestamp)
+
+            const WETHInternalBalanceAfterSwap = await Treasury.WETHAmount()
+            const USDTInternalBalanceAfterSwap = await USDT.balanceOf(await Treasury.getAddress())
+            
+            assert(WETHInternalBalanceAfterSwap.toString() == 0)
+            assert(USDTInternalBalanceAfterSwap > 0)
+        });
+
+        it("Swaps internal tokens correctly that were previously deposited using Camelot", async function () {
             // First step: deposit WETH tokens
             const WETH = await ethers.getContractAt("IWETH", WETHAddress)
             const USDT = await ethers.getContractAt("IERC20", USDTAddress)
@@ -95,4 +124,6 @@ describe("Treasury tests", async function () {
             assert(USDTInternalBalanceAfterSwap > 0)
         });
     })
+
+    
 })
