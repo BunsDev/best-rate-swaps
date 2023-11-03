@@ -18,8 +18,11 @@ describe("Treasury tests", async function () {
         console.log("BeforeEach")
         snapshotId = await network.provider.send("evm_snapshot");
 
-        Treasury = await ethers.getContractAt("Treasury", deployedTreasuryAddress)
+        //Treasury = await ethers.getContractAt("Treasury", deployedTreasuryAddress) // ---- UNCOMMENT THIS LINE IF YOU WANT TO TEST AN ALREADY DEPLOYED CONTRACT AT DESIGNED ADDRESS
 
+        const TreasuryFactory = await ethers.getContractFactory("Treasury");
+        Treasury = await TreasuryFactory.deploy(WETHAddress, USDTAddress, SushiSwapRouterV2Address, CamelotV2RouterAddress);
+        
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
             params: [deployerAddress],
