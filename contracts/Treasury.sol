@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
 import "./interfaces/IUniswapRouterV2.sol";
 import "./interfaces/IUniswapV2Router01.sol";
@@ -12,26 +12,36 @@ contract Treasury {
     IUniswapRouterV2 public sushiswapV2Router;
     IUniswapV2Router01 public camelotV2Router;
 
+    address public WETH;
     address public USDT;
-    mapping(address => uint256) public usersWETHBalance;
+    uint256 public WETHAmount;
     event ETHDeposited(address userAddress, uint256 amount);
+    event TokenSwapped(address userAddress, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
-    constructor(address USDTAddress, address sushiswapV2RouterAddress, address camelotV2RouterAddress) {
+    constructor(address WETHAddress, address USDTAddress, address sushiswapV2RouterAddress, address camelotV2RouterAddress) {
         sushiswapV2Router = IUniswapRouterV2(sushiswapV2RouterAddress);
         camelotV2Router = IUniswapV2Router01(camelotV2RouterAddress);
         USDT = USDTAddress;
+        WETH = WETHAddress;
     }
 
     // @notice: Function use for depositing ETH to the treasury
     function depositWETH(uint256 amount) public {
-        usersWETHBalance[msg.sender] += amount;
-        IERC20(USDT).safeTransferFrom(msg.sender, address(this), amount);
+        WETHAmount += amount;
+        IERC20(WETH).safeTransferFrom(msg.sender, address(this), amount);
         emit ETHDeposited(msg.sender, amount);
     }
 
-    function swapWETHforUSDT(uint256 amount) public {
-        require(usersWETHBalance[msg.sender] >= amount, "Not enought WETH amount");
-        usersWETHBalance[msg.sender] -= amount;
+    function swapWETHforUSDT(uint256 swapAmount, uint8 selectRouter, uint256 minAmountOut, uint256 deadline) public {
+        require(WETHAmount >= swapAmount, "User has not enough balance for swap");
+        WETHAmount -= swapAmount;
+
+        if (selectRouter == 0) {
+            IERC20(WETH).approve(address(sushiswapV2Router), swapAmount);
+            sushiswapV2Router.swapExactTokensForTokens(swapAmount, minAmountOut, path, msg.sender, deadline);
+        }
+
+        emit TokenSwapped(msg.sender, WETH, USDT, swapAmount, amountOut);
 
 
     }
