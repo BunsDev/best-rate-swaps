@@ -58,6 +58,7 @@ contract Treasury is ReentrancyGuard {
 
     // @notice: Function use for withdrawing all the USDT in the Treasury
     function withdrawAllUSDT() nonReentrant public {
+        USDTAmount = 0;
         uint256 USDTAmount_ = IERC20(USDT).balanceOf(address(this));
         IERC20(USDT).transfer(msg.sender, USDTAmount_);
         emit USDTWithdrew(USDTAmount_, msg.sender);
