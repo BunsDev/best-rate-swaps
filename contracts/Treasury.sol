@@ -16,6 +16,7 @@ contract Treasury is ReentrancyGuard {
     address public WETH;
     address public USDT;
     uint256 public WETHAmount;
+    uint256 public USDTAmount;
     event ETHDeposited(address userAddress, uint256 amount);
     event USDTWithdrew(uint256 amount, address receiver);
     event TokenSwapped(address userAddress, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
@@ -50,14 +51,15 @@ contract Treasury is ReentrancyGuard {
             camelotV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(swapAmount, minAmountOut, path, address(this), address(this), deadline);
         }
         uint256 USDTAmountAfter = IERC20(USDT).balanceOf(address(this));
+        USDTAmount += USDTAmountAfter;
 
         emit TokenSwapped(msg.sender, WETH, USDT, swapAmount, USDTAmountAfter - USDTAmountBefore);
     }
 
     // @notice: Function use for withdrawing all the USDT in the Treasury
     function withdrawAllUSDT() nonReentrant public {
-        uint256 USDTAmount = IERC20(USDT).balanceOf(address(this));
-        IERC20(USDT).transfer(msg.sender, USDTAmount);
-        emit USDTWithdrew(USDTAmount, msg.sender);
+        uint256 USDTAmount_ = IERC20(USDT).balanceOf(address(this));
+        IERC20(USDT).transfer(msg.sender, USDTAmount_);
+        emit USDTWithdrew(USDTAmount_, msg.sender);
     }
 }
