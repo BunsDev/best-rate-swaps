@@ -2,7 +2,7 @@ const hre = require('hardhat')
 const { verify } = require("../utils/verify")
 
 // npx hardhat run scripts/DeployTreasury.js --network arbitrum
-// Lastest deployed address: 0x4bd90828b5937e0757C630d1f2124096451d7AE5 // Arbitrum Network
+// Lastest deployed address: 0x997d3168776d9AF7A60d3664E1e69704e72F38b0 // Arbitrum Network
 
 const deployTreasury = async () => {
     const accounts = await hre.ethers.getSigners()
