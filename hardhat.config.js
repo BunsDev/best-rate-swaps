@@ -13,6 +13,7 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 42161,
+      gasPrice: 2000000000,
       forking: {
         enabled: true,
         url: 'https://arb1.arbitrum.io/rpc', // forking Arbitrum
