@@ -4,7 +4,7 @@ const { networks } = require("../hardhat.config")
 
 const deployerAddress = "0xe371cDd686341baDbE337D21c53fA51Db505e361" // My account with funds for impersonating 
 
-let deployedTreasuryAddress = "0x9aAf86Cd90e81B6a6e3986Cd6407EE26B8b79006" // Deployed Treasury address in mainnet (Arbitrum) // USE IN LINE 22 FOR TESTING CONTRACT
+let deployedTreasuryAddress = "0x4bd90828b5937e0757C630d1f2124096451d7AE5" // Deployed Treasury address in mainnet (Arbitrum) // USE IN LINE 22 FOR TESTING CONTRACT
 
 const SushiSwapRouterV2Address = "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506" // SushiSwapV2Router in Arbitrum
 const CamelotV2RouterAddress = "0xc873fEcbd354f5A56E00E710B90EF4201db2448d" // CamelotV2Router in Arbitrum
