@@ -11,3 +11,6 @@ The contract has been deployed to the Arbitrum network an its main functionaliti
 2. Any user can access the platform and initiate a swap for the entire WETH balance held within the contract. The swap is facilitated through the exchange that provides the most favorable rate, as indicated by our frontend interface.
 3. Any user can withdraw the USDT amount of tokens held in the Treasury.
 4. There is a button available for users to retrieve the WETH and USDT token balances of the Treasury contract at any given moment.
+
+## Requirements
+The only requirement for executing some Scripts is having a `PRIVATE_KEY=` variable inside your `.env` file.
